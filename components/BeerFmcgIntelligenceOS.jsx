@@ -43,7 +43,8 @@ const fontMono = 'var(--font-mono), "Courier New", monospace';
 const fontBody = 'var(--font-body), system-ui, sans-serif';
 
 /* ---------------------------------------------------------
-   DATA — sourced directly from the Beer & FMCG Intelligence OS blueprint
+   DATA — sourced directly from the Beer & FMCG Intelligence OS blueprint,
+   cập nhật theo dữ liệu thị trường & pháp lý tính đến Q3/2026
 --------------------------------------------------------- */
 const marketShareData = [
   { name: 'Heineken VN', share: 43, fill: C.gold },
@@ -56,24 +57,42 @@ const marketShareData = [
 const alertData = [
   {
     id: 1, level: 'critical',
-    title: 'Tăng Thuế Tiêu Thụ Đặc Biệt (SCT) lên 70% — H1/2026',
-    impact: 5, urgency: 5,
-    what: 'Bộ Tài chính xác nhận lộ trình tăng SCT theo đúng khung đã công bố, hiệu lực đầu H1/2026.',
-    why: 'Tác động trực tiếp đến giá vốn toàn ngành, đẩy nhanh premiumization và siết margin phân khúc phổ thông.',
-    impactBiz: 'Ước tính biên lợi nhuận phân khúc mainstream giảm 3-5 điểm % nếu không điều chỉnh giá bán.',
-    action: 'Đàm phán lại trade terms, dịch chuyển danh mục SKU sang phân khúc tối ưu margin trước thời điểm hiệu lực.',
+    title: 'Luật Thuế TTĐB 2025 chính thức hiệu lực: SCT bia 65% từ 01/01/2026',
+    impact: 5, urgency: 4,
+    what: 'Luật Thuế Tiêu thụ đặc biệt số 66/2025/QH15 đã có hiệu lực từ 01/01/2026: thuế suất bia ở mức 65% (không phải 70% như dự thảo ban đầu), tăng dần +5 điểm %/năm để đạt 90% vào năm 2031. Có tín hiệu Bộ Tài chính có thể lùi nhịp tăng kế tiếp (65%→70%) sang 2027 để doanh nghiệp thích ứng.',
+    why: 'Đây là mức thuế đã chốt theo luật, khác với kịch bản 70% từng được đề xuất — ảnh hưởng trực tiếp đến cách tính giá vốn và chiến lược premiumization toàn ngành trong 5 năm tới.',
+    impactBiz: 'Sabeco đặt mục tiêu doanh thu 2026 tăng 12% (28.959 tỷ đồng) trong bối cảnh chi phí quảng cáo/khuyến mãi Q1/2026 đã tăng vọt (Sabeco 447 tỷ đồng, Habeco 162 tỷ đồng) — biên lợi nhuận phân khúc mainstream vẫn chịu áp lực dù mức thuế thấp hơn dự kiến.',
+    action: 'Rà soát lại mô hình tài chính đang dùng giả định SCT 70%; cập nhật về đúng lộ trình 65% (2026) → 90% (2031) trước khi trình phê duyệt ngân sách và giá bán 2027.',
   },
   {
     id: 2, level: 'watch',
-    title: 'Nghị định 168 tiếp tục siết chấp hành nồng độ cồn khi lái xe',
+    title: 'Nghị định 168 & Luật Trật tự ATGT: siết chấp hành nồng độ cồn, bổ sung cơ chế trừ điểm GPLX',
     impact: 3, urgency: 4,
-    what: 'Mức phạt và cường độ kiểm tra duy trì ở ngưỡng cao tại các đô thị lớn.',
-    why: 'Thúc đẩy dịch chuyển tiêu thụ từ On-Premise sang Off-Trade, thay đổi cấu trúc kênh dài hạn.',
-    impactBiz: 'Off-Trade hiện chiếm 60.2% volume toàn ngành — xu hướng dự kiến còn tiếp tục.',
-    action: 'Tái phân bổ ngân sách trade spend ưu tiên kênh Off-Trade và thương mại điện tử.',
+    what: 'Mức phạt nồng độ cồn theo Nghị định 168/2024 (ô tô 6-40 triệu đồng, xe máy 2-8 triệu đồng) tiếp tục duy trì nghiêm ngặt. Cục CSGT đã chính thức bác bỏ tin đồn tăng phạt trong 2026 (30/01/2026). Từ 01/07/2026, Luật Trật tự ATGT đường bộ 2024 bổ sung cơ chế trừ điểm GPLX, có thể tước bằng nếu tái phạm nhiều lần.',
+    why: 'Cơ chế trừ điểm mới tạo thêm một lớp răn đe dài hạn, củng cố xu hướng dịch chuyển tiêu thụ từ On-Premise sang Off-Trade đã kéo dài từ 2023.',
+    impactBiz: 'Off-Trade hiện chiếm 60.2% volume toàn ngành (2025) — xu hướng cấu trúc, không phải biến động ngắn hạn.',
+    action: 'Tái phân bổ ngân sách trade spend ưu tiên kênh Off-Trade, thương mại điện tử và các định dạng đóng gói phù hợp tiêu dùng tại nhà.',
   },
   {
-    id: 3, level: 'opportunity',
+    id: 3, level: 'watch',
+    title: '"Bia cỏ" (phi chính thống) tăng trưởng 71% — áp lực giá từ đáy thị trường',
+    impact: 4, urgency: 3,
+    what: 'Theo số liệu Nielsen/VBA, sản lượng phân khúc bia phi chính thống ("bia cỏ") tăng khoảng 71% trong năm 2024, nhanh hơn nhiều so với tốc độ tăng trưởng của các thương hiệu chính thống.',
+    why: 'Trong bối cảnh SCT tăng và sức mua nhóm phổ thông chịu áp lực, phân khúc giá rẻ phi chính thống trở thành điểm thoát chi tiêu — đe dọa trực tiếp danh mục economy/mainstream của các hãng lớn.',
+    impactBiz: 'Rủi ro xói mòn volume tại phân khúc thấp cấp, đặc biệt ở nông thôn và các tỉnh có thu nhập thấp hơn — cần theo dõi sát các khu vực có mật độ "bia cỏ" cao.',
+    action: 'Đánh giá lại danh mục economy tier, cân nhắc SKU dung tích lớn/giá trị tốt hơn để giữ chân nhóm khách hàng nhạy cảm về giá thay vì nhường thị phần cho khu vực phi chính thống.',
+  },
+  {
+    id: 4, level: 'opportunity',
+    title: 'Bia không cồn & kênh thương mại điện tử tiếp tục mở rộng',
+    impact: 3, urgency: 2,
+    what: 'Các dòng bia không cồn/ít cồn (Heineken 0.0, các sản phẩm RTD/cocktail trái cây) tăng trưởng tốt nhờ xu hướng sức khỏe của giới trẻ. Kênh thương mại điện tử tăng trưởng CAGR ước tính ~7,46%, với hơn 500 nhãn hàng bia/rượu đã lên sàn kể từ khi Sabeco mở bán online từ cuối 2023.',
+    why: 'Đây là hai kênh tăng trưởng ít bị ảnh hưởng trực tiếp bởi SCT và Nghị định 168, phù hợp với xu hướng tiêu dùng tại nhà đang lên.',
+    impactBiz: 'Dư địa tăng trưởng danh mục mới mà không cạnh tranh trực diện với phân khúc bia truyền thống đang chịu áp lực thuế và kênh On-Trade.',
+    action: 'Đẩy mạnh đầu tư danh mục bia không cồn và tối ưu vận hành trên sàn TMĐT (Shopee, Lazada, chuỗi bán lẻ online) như một trụ cột tăng trưởng song song.',
+  },
+  {
+    id: 5, level: 'opportunity',
     title: 'Khoảng trắng bia Á Đông nhập khẩu tại WinMart',
     impact: 4, urgency: 3,
     what: 'WinMart hiện khuyết hoàn toàn phân khúc bia Nhật thuần túy (Asahi, Kirin) và bia cao cấp Trung Quốc (Tsingtao).',
@@ -366,7 +385,7 @@ function ForecastTab() {
         <SectionTitle icon={TrendingDown}>Dự Báo Sản Lượng 30-90-180 Ngày (Chỉ Số Nền = 100)</SectionTitle>
         <Panel>
           <div style={{ fontFamily: fontBody, fontSize: 11.5, color: C.faint, marginBottom: 14 }}>
-            Kịch bản minh họa dưới tác động kép SCT 70% và Nghị định 168 — không phải số liệu công bố chính thức.
+            Kịch bản minh họa dưới tác động kép SCT 65% (lộ trình chính thức theo Luật 66/2025/QH15) và Nghị định 168 — không phải số liệu công bố chính thức.
           </div>
           <div style={{ height: 220 }}>
             <ResponsiveContainer width="100%" height="100%">
@@ -377,7 +396,7 @@ function ForecastTab() {
                 <Tooltip contentStyle={{ background: C.panelAlt, border: `1px solid ${C.line}`, fontFamily: fontMono, fontSize: 12 }} />
                 <Legend wrapperStyle={{ fontFamily: fontBody, fontSize: 12 }} />
                 <Line type="monotone" dataKey="base" name="Kịch bản nền" stroke={C.sub} strokeWidth={2} dot={{ r: 3 }} />
-                <Line type="monotone" dataKey="sctImpact" name="SCT 70% + NĐ 168" stroke={C.red} strokeWidth={2.5} dot={{ r: 3 }} />
+                <Line type="monotone" dataKey="sctImpact" name="SCT 65% + NĐ 168" stroke={C.red} strokeWidth={2.5} dot={{ r: 3 }} />
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -463,7 +482,7 @@ export default function BeerFmcgIntelligenceOS() {
 
       {/* KPI Grid */}
       <div style={{ display: 'flex', gap: 16, marginBottom: 26, flexWrap: 'wrap' }}>
-        <KpiCard icon={Package} label="Sản Lượng Toàn Thị Trường" value="~410M lít" sub="Ước tính theo tháng" />
+        <KpiCard icon={Package} label="Sản Lượng Toàn Thị Trường" value="~4,15 tỷ lít" sub="Ước tính cả năm 2026 (VBA/Nielsen) — giảm từ ~4,6 tỷ lít các năm trước" />
         <KpiCard icon={DollarSign} label="Net Sales Value" value="Đang cập nhật" sub="NSV toàn ngành — cần dữ liệu tài chính Q2/2026" accent={C.faint} />
         <KpiCard icon={AlertTriangle} label="Trade Spend / Doanh Thu" value="Đang cập nhật" sub="TTS % — cần dữ liệu nội bộ NPP" accent={C.faint} />
         <KpiCard icon={Target} label="Cảnh Báo Đang Mở" value={alertData.length} sub="Impact ≥3 hoặc Urgency ≥3" accent={C.red} />
@@ -503,7 +522,8 @@ export default function BeerFmcgIntelligenceOS() {
 
       {/* Footer note */}
       <div style={{ marginTop: 32, paddingTop: 16, borderTop: `1px solid ${C.line}`, fontFamily: fontBody, fontSize: 11, color: C.faint, lineHeight: 1.6 }}>
-        Dashboard dựng từ Beer &amp; FMCG Intelligence OS Blueprint. Các số liệu giá bán lẻ và thị phần theo blueprint gốc;
+        Dashboard dựng từ Beer &amp; FMCG Intelligence OS Blueprint, cập nhật lần gần nhất theo dữ liệu thị trường &amp; pháp lý tính đến Q3/2026
+        (Luật Thuế TTĐB 66/2025/QH15, Nghị định 168/2024, Luật Trật tự ATGT đường bộ 2024). Các số liệu giá bán lẻ và thị phần theo blueprint gốc;
         các trường "Đang cập nhật" phản ánh khoảng trống dữ liệu thực tế (không có báo cáo tài chính công khai Q2/2026 cho phần lớn các hãng).
         Kịch bản dự báo mang tính minh họa cấu trúc, không phải số liệu dự báo chính thức.
       </div>
