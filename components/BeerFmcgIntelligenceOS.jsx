@@ -43,64 +43,57 @@ const fontMono = 'var(--font-mono), "Courier New", monospace';
 const fontBody = 'var(--font-body), system-ui, sans-serif';
 
 /* ---------------------------------------------------------
-   DATA — sourced directly from the Beer & FMCG Intelligence OS blueprint,
-   cập nhật theo dữ liệu thị trường & pháp lý tính đến Q3/2026
+   DATA — Executive Tab (alerts + market share) giờ fetch động từ Supabase
+   (bảng market_alerts, market_brands) qua props initialAlerts/initialMarketShare,
+   xem app/page.tsx. Các phần dưới đây (pricing, distribution, forecast, jobs)
+   vẫn là dữ liệu tĩnh từ blueprint gốc — sẽ migrate ở giai đoạn tiếp theo
+   (product_skus, dynamic_pricing_matrix, field_sales_performance đã có schema
+   sẵn trong Supabase nhưng chưa được nối vào UI).
 --------------------------------------------------------- */
-const marketShareData = [
-  { name: 'Heineken VN', share: 43, fill: C.gold },
-  { name: 'SABECO', share: 33.9, fill: C.amber },
-  { name: 'Carlsberg VN', share: 9.2, fill: '#6B8CAE' },
-  { name: 'HABECO', share: 7.5, fill: '#8B95A7' },
-  { name: 'Ngoại nhập/Craft', share: 4.9, fill: '#4A5468' },
-];
+// Màu hiển thị theo brand — thuần presentation, không lưu trong DB.
+const BRAND_COLORS = {
+  'Heineken Vietnam': C.gold,
+  'Heineken VN': C.gold,
+  'SABECO': C.amber,
+  'Carlsberg Vietnam': '#6B8CAE',
+  'Carlsberg VN': '#6B8CAE',
+  'HABECO': '#8B95A7',
+  'Bia Ngoại Nhập/Craft': '#4A5468',
+  'Ngoại nhập/Craft': '#4A5468',
+};
 
-const alertData = [
-  {
-    id: 1, level: 'critical',
-    title: 'Luật Thuế TTĐB 2025 chính thức hiệu lực: SCT bia 65% từ 01/01/2026',
-    impact: 5, urgency: 4,
-    what: 'Luật Thuế Tiêu thụ đặc biệt số 66/2025/QH15 đã có hiệu lực từ 01/01/2026: thuế suất bia ở mức 65% (không phải 70% như dự thảo ban đầu), tăng dần +5 điểm %/năm để đạt 90% vào năm 2031. Có tín hiệu Bộ Tài chính có thể lùi nhịp tăng kế tiếp (65%→70%) sang 2027 để doanh nghiệp thích ứng.',
-    why: 'Đây là mức thuế đã chốt theo luật, khác với kịch bản 70% từng được đề xuất — ảnh hưởng trực tiếp đến cách tính giá vốn và chiến lược premiumization toàn ngành trong 5 năm tới.',
-    impactBiz: 'Sabeco đặt mục tiêu doanh thu 2026 tăng 12% (28.959 tỷ đồng) trong bối cảnh chi phí quảng cáo/khuyến mãi Q1/2026 đã tăng vọt (Sabeco 447 tỷ đồng, Habeco 162 tỷ đồng) — biên lợi nhuận phân khúc mainstream vẫn chịu áp lực dù mức thuế thấp hơn dự kiến.',
-    action: 'Rà soát lại mô hình tài chính đang dùng giả định SCT 70%; cập nhật về đúng lộ trình 65% (2026) → 90% (2031) trước khi trình phê duyệt ngân sách và giá bán 2027.',
-  },
-  {
-    id: 2, level: 'watch',
-    title: 'Nghị định 168 & Luật Trật tự ATGT: siết chấp hành nồng độ cồn, bổ sung cơ chế trừ điểm GPLX',
-    impact: 3, urgency: 4,
-    what: 'Mức phạt nồng độ cồn theo Nghị định 168/2024 (ô tô 6-40 triệu đồng, xe máy 2-8 triệu đồng) tiếp tục duy trì nghiêm ngặt. Cục CSGT đã chính thức bác bỏ tin đồn tăng phạt trong 2026 (30/01/2026). Từ 01/07/2026, Luật Trật tự ATGT đường bộ 2024 bổ sung cơ chế trừ điểm GPLX, có thể tước bằng nếu tái phạm nhiều lần.',
-    why: 'Cơ chế trừ điểm mới tạo thêm một lớp răn đe dài hạn, củng cố xu hướng dịch chuyển tiêu thụ từ On-Premise sang Off-Trade đã kéo dài từ 2023.',
-    impactBiz: 'Off-Trade hiện chiếm 60.2% volume toàn ngành (2025) — xu hướng cấu trúc, không phải biến động ngắn hạn.',
-    action: 'Tái phân bổ ngân sách trade spend ưu tiên kênh Off-Trade, thương mại điện tử và các định dạng đóng gói phù hợp tiêu dùng tại nhà.',
-  },
-  {
-    id: 3, level: 'watch',
-    title: '"Bia cỏ" (phi chính thống) tăng trưởng 71% — áp lực giá từ đáy thị trường',
-    impact: 4, urgency: 3,
-    what: 'Theo số liệu Nielsen/VBA, sản lượng phân khúc bia phi chính thống ("bia cỏ") tăng khoảng 71% trong năm 2024, nhanh hơn nhiều so với tốc độ tăng trưởng của các thương hiệu chính thống.',
-    why: 'Trong bối cảnh SCT tăng và sức mua nhóm phổ thông chịu áp lực, phân khúc giá rẻ phi chính thống trở thành điểm thoát chi tiêu — đe dọa trực tiếp danh mục economy/mainstream của các hãng lớn.',
-    impactBiz: 'Rủi ro xói mòn volume tại phân khúc thấp cấp, đặc biệt ở nông thôn và các tỉnh có thu nhập thấp hơn — cần theo dõi sát các khu vực có mật độ "bia cỏ" cao.',
-    action: 'Đánh giá lại danh mục economy tier, cân nhắc SKU dung tích lớn/giá trị tốt hơn để giữ chân nhóm khách hàng nhạy cảm về giá thay vì nhường thị phần cho khu vực phi chính thống.',
-  },
-  {
-    id: 4, level: 'opportunity',
-    title: 'Bia không cồn & kênh thương mại điện tử tiếp tục mở rộng',
-    impact: 3, urgency: 2,
-    what: 'Các dòng bia không cồn/ít cồn (Heineken 0.0, các sản phẩm RTD/cocktail trái cây) tăng trưởng tốt nhờ xu hướng sức khỏe của giới trẻ. Kênh thương mại điện tử tăng trưởng CAGR ước tính ~7,46%, với hơn 500 nhãn hàng bia/rượu đã lên sàn kể từ khi Sabeco mở bán online từ cuối 2023.',
-    why: 'Đây là hai kênh tăng trưởng ít bị ảnh hưởng trực tiếp bởi SCT và Nghị định 168, phù hợp với xu hướng tiêu dùng tại nhà đang lên.',
-    impactBiz: 'Dư địa tăng trưởng danh mục mới mà không cạnh tranh trực diện với phân khúc bia truyền thống đang chịu áp lực thuế và kênh On-Trade.',
-    action: 'Đẩy mạnh đầu tư danh mục bia không cồn và tối ưu vận hành trên sàn TMĐT (Shopee, Lazada, chuỗi bán lẻ online) như một trụ cột tăng trưởng song song.',
-  },
-  {
-    id: 5, level: 'opportunity',
-    title: 'Khoảng trắng bia Á Đông nhập khẩu tại WinMart',
-    impact: 4, urgency: 3,
-    what: 'WinMart hiện khuyết hoàn toàn phân khúc bia Nhật thuần túy (Asahi, Kirin) và bia cao cấp Trung Quốc (Tsingtao).',
-    why: 'Khoảng trống danh mục tại chuỗi MT lớn nhất theo số điểm bán, chưa có đối thủ chiếm lĩnh.',
-    impactBiz: 'Cơ hội doanh thu tăng thêm nếu pilot thành công trước khi đối thủ lấp đầy khoảng trống.',
-    action: 'Triển khai pilot 50 cửa hàng WinMart+ khu vực trung tâm, đánh giá sau 90 ngày.',
-  },
-];
+/**
+ * Chuyển 1 dòng bảng `market_brands` (Supabase) thành shape dùng cho BarChart.
+ */
+function mapBrandRow(row) {
+  return {
+    name: row.brand_name,
+    share: Number(row.market_share_volume),
+    fill: BRAND_COLORS[row.brand_name] || C.faint,
+  };
+}
+
+/**
+ * Chuyển 1 dòng bảng `market_alerts` (Supabase) thành shape dùng cho AlertCard.
+ * - `level` hiển thị (critical/watch/opportunity) tách biệt với `priority` gốc trong DB:
+ *   `priority` (CRITICAL/WARNING) do trigger enforce_alert_playbook_policy tự động quản lý
+ *   theo impact/urgency; `alert_type` (THREAT/OPPORTUNITY) là nhãn phân loại độc lập, đặt
+ *   tường minh khi insert — không bị trigger ghi đè.
+ */
+function mapAlertRow(row) {
+  const level =
+    row.alert_type === 'OPPORTUNITY' ? 'opportunity' :
+    row.priority === 'CRITICAL' ? 'critical' : 'watch';
+  return {
+    id: row.id,
+    level,
+    title: row.title,
+    details: row.details,
+    action: row.strategic_action,
+    impact: row.impact,
+    urgency: row.urgency,
+  };
+}
 
 const pricingMatrix = [
   { tier: 'Premium', sku: 'Heineken Original', price: 457000, unit: 'thùng' },
@@ -205,12 +198,14 @@ function AlertCard({ a }) {
       <div style={{ fontFamily: fontDisplay, fontSize: 15.5, color: C.ink, marginBottom: 10, lineHeight: 1.35 }}>
         {a.title}
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px 16px', fontFamily: fontBody, fontSize: 12.5, color: C.sub, lineHeight: 1.5 }}>
-        <div><b style={{ color: C.faint }}>Điều gì xảy ra:</b> {a.what}</div>
-        <div><b style={{ color: C.faint }}>Tại sao quan trọng:</b> {a.why}</div>
-        <div><b style={{ color: C.faint }}>Tác động DN:</b> {a.impactBiz}</div>
-        <div><b style={{ color: C.gold }}>Khuyến nghị:</b> {a.action}</div>
+      <div style={{ fontFamily: fontBody, fontSize: 12.5, color: C.sub, lineHeight: 1.55, marginBottom: 10 }}>
+        {a.details}
       </div>
+      {a.action && (
+        <div style={{ fontFamily: fontBody, fontSize: 12.5, color: C.gold, lineHeight: 1.5 }}>
+          <b>Khuyến nghị:</b> {a.action}
+        </div>
+      )}
     </div>
   );
 }
@@ -249,11 +244,22 @@ function ProgressBar({ value, label, color }) {
 /* ---------------------------------------------------------
    TABS
 --------------------------------------------------------- */
-function ExecutiveTab() {
+function ExecutiveTab({ alertData, marketShareData, dataError }) {
   return (
     <div style={{ display: 'grid', gridTemplateColumns: '1.6fr 1fr', gap: 20 }}>
       <div>
         <SectionTitle icon={Radio}>Real-Time System Alerts (Job 1)</SectionTitle>
+        {dataError && (
+          <div style={{ fontFamily: fontBody, fontSize: 12.5, color: C.red, marginBottom: 12 }}>
+            Không tải được dữ liệu từ Supabase ({dataError}). Kiểm tra biến môi trường
+            NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY trên Vercel.
+          </div>
+        )}
+        {!dataError && alertData.length === 0 && (
+          <div style={{ fontFamily: fontBody, fontSize: 12.5, color: C.faint, marginBottom: 12 }}>
+            Chưa có cảnh báo nào trong bảng market_alerts.
+          </div>
+        )}
         {alertData.map(a => <AlertCard key={a.id} a={a} />)}
       </div>
       <div>
@@ -449,8 +455,15 @@ const TABS = [
   { key: 'forecast', label: 'Forecast', sub: 'Hoạch Định', icon: Sparkles },
 ];
 
-export default function BeerFmcgIntelligenceOS() {
+export default function BeerFmcgIntelligenceOS({
+  initialAlerts = [],
+  initialMarketShare = [],
+  dataError = null,
+}) {
   const [activeTab, setActiveTab] = useState('executive');
+
+  const alertData = initialAlerts.map(mapAlertRow);
+  const marketShareData = initialMarketShare.map(mapBrandRow);
 
   return (
     <div className={`${fraunces.variable} ${inter.variable} ${plexMono.variable}`} style={{
@@ -515,17 +528,21 @@ export default function BeerFmcgIntelligenceOS() {
       </div>
 
       {/* Content */}
-      {activeTab === 'executive' && <ExecutiveTab />}
+      {activeTab === 'executive' && (
+        <ExecutiveTab alertData={alertData} marketShareData={marketShareData} dataError={dataError} />
+      )}
       {activeTab === 'pricing' && <PricingTab />}
       {activeTab === 'distribution' && <DistributionTab />}
       {activeTab === 'forecast' && <ForecastTab />}
 
       {/* Footer note */}
       <div style={{ marginTop: 32, paddingTop: 16, borderTop: `1px solid ${C.line}`, fontFamily: fontBody, fontSize: 11, color: C.faint, lineHeight: 1.6 }}>
-        Dashboard dựng từ Beer &amp; FMCG Intelligence OS Blueprint, cập nhật lần gần nhất theo dữ liệu thị trường &amp; pháp lý tính đến Q3/2026
-        (Luật Thuế TTĐB 66/2025/QH15, Nghị định 168/2024, Luật Trật tự ATGT đường bộ 2024). Các số liệu giá bán lẻ và thị phần theo blueprint gốc;
-        các trường "Đang cập nhật" phản ánh khoảng trống dữ liệu thực tế (không có báo cáo tài chính công khai Q2/2026 cho phần lớn các hãng).
-        Kịch bản dự báo mang tính minh họa cấu trúc, không phải số liệu dự báo chính thức.
+        Tab Executive (cảnh báo &amp; thị phần) đọc dữ liệu trực tiếp từ Supabase (bảng market_alerts, market_brands) mỗi lần tải trang.
+        Các tab Pricing / Distribution / Forecast vẫn dùng dữ liệu tĩnh từ Beer &amp; FMCG Intelligence OS Blueprint — sẽ migrate sang
+        Supabase (product_skus, dynamic_pricing_matrix, field_sales_performance) ở giai đoạn tiếp theo. Nội dung pháp lý cập nhật đến Q3/2026
+        (Luật Thuế TTĐB 66/2025/QH15, Nghị định 168/2024, Luật Trật tự ATGT đường bộ 2024). Các trường "Đang cập nhật" phản ánh khoảng trống
+        dữ liệu thực tế (không có báo cáo tài chính công khai Q2/2026 cho phần lớn các hãng). Kịch bản dự báo mang tính minh họa cấu trúc,
+        không phải số liệu dự báo chính thức.
       </div>
     </div>
   );
