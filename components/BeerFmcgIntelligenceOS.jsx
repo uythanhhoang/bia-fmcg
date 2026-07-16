@@ -455,9 +455,16 @@ const TABS = [
   { key: 'forecast', label: 'Forecast', sub: 'Hoạch Định', icon: Sparkles },
 ];
 
+/**
+ * @param {{
+ *   initialAlerts?: any[],
+ *   initialMarketShare?: any[],
+ *   dataError?: string | null,
+ * }} props
+ */
 export default function BeerFmcgIntelligenceOS({
-  initialAlerts = [],
-  initialMarketShare = [],
+  initialAlerts = /** @type {any[]} */ ([]),
+  initialMarketShare = /** @type {any[]} */ ([]),
   dataError = null,
 }) {
   const [activeTab, setActiveTab] = useState('executive');
