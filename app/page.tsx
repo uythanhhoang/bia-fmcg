@@ -7,20 +7,19 @@ import { getSupabaseClient } from "../lib/supabase";
 const BeerFmcgIntelligenceOS: any = BeerFmcgIntelligenceOSRaw;
 
 // Luôn fetch dữ liệu mới nhất từ Supabase mỗi lần có người tải trang — không cache tĩnh.
-// (Phương án 1 trong lộ trình: "fetch on load". Có thể nâng cấp sau sang ISR (revalidate: N)
-// hoặc Supabase Realtime nếu cần cập nhật tức thời không cần reload.)
 export const revalidate = 0;
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
   let alerts: any[] = [];
   let brands: any[] = [];
+  let financials: any[] = [];
   let fetchError: string | null = null;
 
   try {
     const supabase = getSupabaseClient();
 
-    const [alertsRes, brandsRes] = await Promise.all([
+    const [alertsRes, brandsRes, financialsRes] = await Promise.all([
       supabase
         .from("market_alerts")
         .select("*")
@@ -30,15 +29,20 @@ export default async function Home() {
         .from("market_brands")
         .select("*")
         .order("market_share_volume", { ascending: false }),
+      supabase
+        .from("company_financials")
+        .select("*")
+        .order("company_name", { ascending: true }),
     ]);
 
     if (alertsRes.error) throw alertsRes.error;
     if (brandsRes.error) throw brandsRes.error;
+    if (financialsRes.error) throw financialsRes.error;
 
     alerts = alertsRes.data ?? [];
     brands = brandsRes.data ?? [];
+    financials = financialsRes.data ?? [];
   } catch (err: any) {
-    // Không để lỗi kết nối Supabase làm sập cả trang — log lại và hiển thị trạng thái rỗng có kiểm soát.
     console.error("Lỗi tải dữ liệu từ Supabase:", err?.message ?? err);
     fetchError = err?.message ?? "Không thể kết nối Supabase";
   }
@@ -47,6 +51,7 @@ export default async function Home() {
     <BeerFmcgIntelligenceOS
       initialAlerts={alerts}
       initialMarketShare={brands}
+      initialFinancials={financials}
       dataError={fetchError}
     />
   );
