@@ -11,31 +11,14 @@ import {
   Radio, Target, Truck, Gauge, ChevronRight, Clock, ShieldAlert, Sparkles
 } from 'lucide-react';
 
-/* ---------------------------------------------------------
-   FONTS — loaded via next/font/google (self-hosted at build
-   time, no runtime request, no flash of unstyled text)
---------------------------------------------------------- */
 const fraunces = Fraunces({ subsets: ['latin'], weight: ['500', '600'], variable: '--font-display' });
 const inter = Inter({ subsets: ['latin'], weight: ['400', '500', '600'], variable: '--font-body' });
 const plexMono = IBM_Plex_Mono({ subsets: ['latin'], weight: ['400', '500', '600'], variable: '--font-mono' });
 
-/* ---------------------------------------------------------
-   DESIGN TOKENS
---------------------------------------------------------- */
 const C = {
-  bg: '#0A0F1C',
-  panel: '#111827',
-  panelAlt: '#161F32',
-  line: '#232D42',
-  navy: '#13294B',
-  gold: '#C9A227',
-  goldSoft: '#E8C766',
-  amber: '#F2A900',
-  red: '#E5484D',
-  green: '#3DD68C',
-  ink: '#E7EAF0',
-  sub: '#8B95A7',
-  faint: '#5B6478',
+  bg: '#0A0F1C', panel: '#111827', panelAlt: '#161F32', line: '#232D42', navy: '#13294B',
+  gold: '#C9A227', goldSoft: '#E8C766', amber: '#F2A900', red: '#E5484D', green: '#3DD68C',
+  ink: '#E7EAF0', sub: '#8B95A7', faint: '#5B6478',
 };
 
 const fontDisplay = 'var(--font-display), Georgia, serif';
@@ -43,52 +26,38 @@ const fontMono = 'var(--font-mono), "Courier New", monospace';
 const fontBody = 'var(--font-body), system-ui, sans-serif';
 
 const BRAND_COLORS = {
-  'Heineken Vietnam': C.gold,
-  'Heineken VN': C.gold,
-  'SABECO': C.amber,
-  'Carlsberg Vietnam': '#6B8CAE',
-  'Carlsberg VN': '#6B8CAE',
-  'HABECO': '#8B95A7',
-  'Bia Ngoại Nhập/Craft': '#4A5468',
-  'Ngoại nhập/Craft': '#4A5468',
+  'Heineken Vietnam': C.gold, 'Heineken VN': C.gold, 'SABECO': C.amber,
+  'Carlsberg Vietnam': '#6B8CAE', 'Carlsberg VN': '#6B8CAE', 'HABECO': '#8B95A7',
+  'Bia Ngoại Nhập/Craft': '#4A5468', 'Ngoại nhập/Craft': '#4A5468',
 };
 
 function mapBrandRow(row) {
-  return {
-    name: row.brand_name,
-    share: Number(row.market_share_volume),
-    fill: BRAND_COLORS[row.brand_name] || C.faint,
-  };
+  return { name: row.brand_name, share: Number(row.market_share_volume), fill: BRAND_COLORS[row.brand_name] || C.faint };
 }
 
 function mapAlertRow(row) {
-  const level =
-    row.alert_type === 'OPPORTUNITY' ? 'opportunity' :
-    row.priority === 'CRITICAL' ? 'critical' : 'watch';
-  return {
-    id: row.id,
-    level,
-    title: row.title,
-    details: row.details,
-    action: row.strategic_action,
-    impact: row.impact,
-    urgency: row.urgency,
-  };
+  const level = row.alert_type === 'OPPORTUNITY' ? 'opportunity' : row.priority === 'CRITICAL' ? 'critical' : 'watch';
+  return { id: row.id, level, title: row.title, details: row.details, action: row.strategic_action, impact: row.impact, urgency: row.urgency };
 }
 
+/**
+ * Chuyển 1 dòng bảng `company_financials` (Supabase) thành shape gọn cho KPI card.
+ * `isLatestActual` đánh dấu kỳ báo cáo THỰC TẾ gần nhất theo TỪNG công ty — dùng field
+ * này (thay vì suy luận từ tên `period`) để tránh cộng dồn sai khi các công ty công bố
+ * lệch kỳ nhau (VD: Sabeco đã có Q2/2026, Habeco mới chỉ có Q1/2026).
+ */
 function mapFinancialRow(row) {
   const ttsPercent = row.ad_promo_expense_vnd_bn && row.net_revenue_vnd_bn
     ? (Number(row.ad_promo_expense_vnd_bn) / Number(row.net_revenue_vnd_bn)) * 100
     : null;
   return {
-    id: row.id,
-    company: row.company_name,
-    period: row.period,
+    id: row.id, company: row.company_name, period: row.period,
     netRevenue: row.net_revenue_vnd_bn != null ? Number(row.net_revenue_vnd_bn) : null,
     yoyGrowth: row.yoy_revenue_growth_pct != null ? Number(row.yoy_revenue_growth_pct) : null,
     adPromoExpense: row.ad_promo_expense_vnd_bn != null ? Number(row.ad_promo_expense_vnd_bn) : null,
     ttsPercent,
     isFullYearTarget: row.is_full_year_target,
+    isLatestActual: row.is_latest_actual,
   };
 }
 
@@ -393,7 +362,8 @@ export default function BeerFmcgIntelligenceOS({
   const alertData = initialAlerts.map(mapAlertRow);
   const marketShareData = initialMarketShare.map(mapBrandRow);
   const financials = initialFinancials.map(mapFinancialRow);
-  const financialsQ1 = financials.filter(f => !f.isFullYearTarget);
+  const financialsLatest = financials.filter(f => f.isLatestActual);
+  const anyQ1Only = financialsLatest.some(f => f.period === 'Q1/2026');
 
   return (
     <div className={`${fraunces.variable} ${inter.variable} ${plexMono.variable}`} style={{ background: C.bg, minHeight: '100vh', padding: '28px 32px', fontFamily: fontBody, color: C.ink }}>
@@ -408,8 +378,26 @@ export default function BeerFmcgIntelligenceOS({
       </div>
       <div style={{ display: 'flex', gap: 16, marginBottom: 26, flexWrap: 'wrap' }}>
         <KpiCard icon={Package} label="Sản Lượng Toàn Thị Trường" value="~4,15 tỷ lít" sub="Ước tính cả năm 2026 (VBA/Nielsen) — giảm từ ~4,6 tỷ lít các năm trước" />
-        <KpiCard icon={DollarSign} label="Net Sales Value" value={financialsQ1.length > 0 ? `${fmt(financialsQ1.reduce((sum, f) => sum + (f.netRevenue || 0), 0))} tỷ` : 'Đang cập nhật'} sub={financialsQ1.length > 0 ? `${financialsQ1.map(f => `${f.company} ${fmt(f.netRevenue)} tỷ (${f.yoyGrowth > 0 ? '+' : ''}${f.yoyGrowth}%)`).join(' · ')} — Q1/2026 thực tế. Q2/2026 hợp nhất chưa công bố (dự kiến cuối 7/2026); Heineken VN/Carlsberg VN không công bố` : 'NSV toàn ngành — cần dữ liệu tài chính Q2/2026'} accent={financialsQ1.length > 0 ? C.gold : C.faint} />
-        <KpiCard icon={AlertTriangle} label="Trade Spend / Doanh Thu" value={financialsQ1.filter(f => f.ttsPercent != null).length > 0 ? financialsQ1.filter(f => f.ttsPercent != null).map(f => `${f.company} ${f.ttsPercent.toFixed(1)}%`).join(' · ') : 'Đang cập nhật'} sub={financialsQ1.filter(f => f.ttsPercent != null).length > 0 ? `Chi phí quảng cáo/khuyến mãi ÷ doanh thu thuần, Q1/2026 thực tế (${financialsQ1.map(f => `${f.company}: ${fmt(f.adPromoExpense || 0)} tỷ`).join(', ')})` : 'TTS % — cần dữ liệu nội bộ NPP'} accent={financialsQ1.filter(f => f.ttsPercent != null).length > 0 ? C.amber : C.faint} />
+        <KpiCard
+          icon={DollarSign}
+          label="Net Sales Value"
+          value={financialsLatest.length > 0 ? `${fmt(financialsLatest.reduce((sum, f) => sum + (f.netRevenue || 0), 0))} tỷ` : 'Đang cập nhật'}
+          sub={financialsLatest.length > 0
+            ? `${financialsLatest.map(f => `${f.company} ${f.period.replace('/2026', '')} ${fmt(f.netRevenue)} tỷ (${f.yoyGrowth > 0 ? '+' : ''}${f.yoyGrowth}%)`).join(' · ')}${anyQ1Only ? ' — Habeco Q2/2026 hợp nhất chưa công bố' : ''}; Heineken VN/Carlsberg VN không công bố`
+            : 'NSV toàn ngành — cần dữ liệu tài chính công khai'}
+          accent={financialsLatest.length > 0 ? C.gold : C.faint}
+        />
+        <KpiCard
+          icon={AlertTriangle}
+          label="Trade Spend / Doanh Thu"
+          value={financialsLatest.filter(f => f.ttsPercent != null).length > 0
+            ? financialsLatest.filter(f => f.ttsPercent != null).map(f => `${f.company} ${f.ttsPercent.toFixed(1)}%`).join(' · ')
+            : 'Đang cập nhật'}
+          sub={financialsLatest.filter(f => f.ttsPercent != null).length > 0
+            ? `Chi phí quảng cáo/khuyến mãi ÷ doanh thu thuần (${financialsLatest.filter(f => f.ttsPercent != null).map(f => `${f.company} ${f.period}`).join(', ')}). Sabeco Q2/2026 không tách riêng khoản này trong BCTC nên không tính được TTS kỳ mới nhất.`
+            : 'TTS % — cần dữ liệu nội bộ NPP'}
+          accent={financialsLatest.filter(f => f.ttsPercent != null).length > 0 ? C.amber : C.faint}
+        />
         <KpiCard icon={Target} label="Cảnh Báo Đang Mở" value={alertData.length} sub="Impact ≥3 hoặc Urgency ≥3" accent={C.red} />
       </div>
       <div style={{ display: 'flex', gap: 6, marginBottom: 24, borderBottom: `1px solid ${C.line}` }}>
@@ -430,9 +418,10 @@ export default function BeerFmcgIntelligenceOS({
       <div style={{ marginTop: 32, paddingTop: 16, borderTop: `1px solid ${C.line}`, fontFamily: fontBody, fontSize: 11, color: C.faint, lineHeight: 1.6 }}>
         Tab Executive (cảnh báo &amp; thị phần, NSV, TTS%) đọc dữ liệu trực tiếp từ Supabase (market_alerts, market_brands, company_financials) mỗi lần tải trang.
         Các tab Pricing / Distribution / Forecast vẫn dùng dữ liệu tĩnh từ Beer &amp; FMCG Intelligence OS Blueprint. Nội dung pháp lý cập nhật đến Q3/2026
-        (Luật Thuế TTĐB 66/2025/QH15, Nghị định 168/2024, Luật Trật tự ATGT đường bộ 2024). NSV/TTS dựa trên BCTC Q1/2026 thực tế của SABECO và HABECO
-        (2 doanh nghiệp niêm yết duy nhất có công bố công khai) — không đại diện cho toàn ngành vì Heineken VN và Carlsberg VN không công bố tài chính.
-        Kịch bản dự báo ở tab Forecast mang tính minh họa cấu trúc, không phải số liệu dự báo chính thức.
+        (Luật Thuế TTĐB 66/2025/QH15, Nghị định 168/2024, Luật Trật tự ATGT đường bộ 2024). NSV/TTS dựa trên kỳ báo cáo THỰC TẾ mới nhất mà mỗi công ty đã công bố
+        (Sabeco: Q2/2026, công bố 23/7/2026; Habeco: Q1/2026, do BCTC hợp nhất Q2/2026 của công ty mẹ Habeco chưa công bố tính đến 27/7/2026) — không đại diện cho
+        toàn ngành vì Heineken VN và Carlsberg VN không công bố tài chính công khai. Kịch bản dự báo ở tab Forecast mang tính minh họa cấu trúc, không phải số liệu
+        dự báo chính thức.
       </div>
     </div>
   );
